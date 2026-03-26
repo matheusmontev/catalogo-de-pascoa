@@ -44,7 +44,9 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
     
     try {
         await signInWithEmailAndPassword(auth, email, senha);
+        console.log("Login completado com sucesso");
     } catch (error) {
+        console.error("Erro no login:", error);
         document.getElementById("loginError").textContent = "E-mail ou senha incorretos.";
         document.getElementById("loginError").classList.remove("hidden");
     } finally {
@@ -53,7 +55,7 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
 });
 
 window.fazerLogout = async () => {
-    try { await signOut(auth); } catch(e) { /* ignore */ }
+    try { await signOut(auth); } catch(e) { console.error("Erro ao fazer logout:", e); }
 };
 
 // INITIAL LOAD
@@ -123,7 +125,7 @@ window.salvarCategoria = async (e) => {
         mCategoria.hide();
         carregarCategorias();
         carregarProdutos();
-    } catch(err) {}
+    } catch(err) { console.error("Erro ao salvar categoria:", err); }
 };
 window.excluirCategoria = async (id) => {
     if(confirm("Excluir?")) {
@@ -170,7 +172,7 @@ async function carregarProdutos() {
             `;
         });
         if(arr.length === 0) lista.innerHTML = "<tr><td colspan='6'>Sem dados.</td></tr>";
-    } catch(err) {}
+    } catch(err) { console.error("Erro ao carregar produtos:", err); }
 }
 
 window.toggleProdutoAtivo = async (id, status) => { await updateDoc(doc(db, "produtos", id), { ativo: status }); };
@@ -217,7 +219,10 @@ window.salvarProduto = async (e) => {
         else await addDoc(collection(db, "produtos"), data);
         mProduto.hide();
         carregarProdutos();
-    } catch(err) { alert("Erro ao salvar"); }
+    } catch(err) { 
+        console.error("Erro ao salvar produto:", err);
+        alert("Erro ao salvar"); 
+    }
 };
 window.excluirProduto = async (id) => {
     if(confirm("Excluir produto definitivamente?")) {
@@ -244,6 +249,7 @@ async function fazerUploadCloudinary(e) {
         const res = await fetch(CLOUDINARY_URL, { method: "POST", body: fd });
         const data = await res.json();
         if(data.secure_url) {
+            console.log("Upload no Cloudinary feito com sucesso");
             document.getElementById("produtoFotoUrl").value = data.secure_url;
             let p = document.getElementById("previewProduto");
             p.src = data.secure_url;
@@ -253,6 +259,7 @@ async function fazerUploadCloudinary(e) {
             alert("Erro do Cloudinary - Preset: " + UPLOAD_PRESET);
         }
     } catch(e) {
+        console.error("Erro no upload do cloudinary:", e);
         alert("Erro HTTP no upload.");
     } finally {
         document.getElementById("uploadFeedback").classList.add("hidden");
@@ -301,7 +308,7 @@ async function carregarPedidos() {
                 </tr>
             `;
         });
-    } catch(err) {}
+    } catch(err) { console.error("Erro ao carregar pedidos:", err); }
 }
 
 window.verPedido = (id) => {
@@ -334,10 +341,11 @@ async function carregarConfiguracoes() {
         if(snap.exists()) {
             const data = snap.data();
             document.getElementById("configAviso").value = data.aviso_texto || "";
+            document.getElementById("configLogo").value = data.logo_url || "";
             document.getElementById("configWhats").value = data.whatsapp_emily || "";
             document.getElementById("configApikey").value = data.callmebot_apikey || "";
         }
-    } catch(err) {}
+    } catch(err) { console.error("Erro ao carregar configuracoes:", err); }
 }
 
 window.salvarConfiguracoes = async (e) => {
@@ -347,10 +355,12 @@ window.salvarConfiguracoes = async (e) => {
     try {
         await setDoc(doc(db, "configuracoes", "geral"), {
             aviso_texto: document.getElementById("configAviso").value,
+            logo_url: document.getElementById("configLogo").value,
             whatsapp_emily: document.getElementById("configWhats").value,
             callmebot_apikey: document.getElementById("configApikey").value
         });
+        console.log("Configurações salvas com sucesso");
         alert("Salvo!");
-    } catch(err) {}
+    } catch(err) { console.error("Erro ao salvar configuracoes:", err); }
     btn.disabled = false;
 };

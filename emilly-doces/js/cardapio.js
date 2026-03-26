@@ -32,6 +32,20 @@ async function carregarMenu() {
                 textoAviso.textContent = config.aviso_texto;
                 avisoHeader.classList.remove("d-none");
             }
+            if (config.logo_url && config.logo_url.trim() !== "") {
+                const logoEl = document.getElementById("logoCardapio");
+                if (logoEl) {
+                    logoEl.src = config.logo_url;
+                    logoEl.classList.remove("d-none");
+                }
+                let link = document.querySelector("link[rel~='icon']");
+                if (!link) {
+                    link = document.createElement('link');
+                    link.rel = 'icon';
+                    document.head.appendChild(link);
+                }
+                link.href = config.logo_url;
+            }
         }
 
         // 2. Carregar Categorias
@@ -86,8 +100,10 @@ function renderizarCardapio() {
         li.innerHTML = `<a class="nav-link shadow-sm ${index === 0 ? 'active' : ''}" href="#cat-${cat.id}">${cat.nome}</a>`;
         
         li.querySelector('a').addEventListener('click', (e) => {
+            e.preventDefault();
             document.querySelectorAll('.nav-pills .nav-link').forEach(nav => nav.classList.remove('active'));
             e.target.classList.add('active');
+            document.getElementById(`cat-${cat.id}`).scrollIntoView({ behavior: 'smooth' });
         });
 
         categoriasTab.appendChild(li);

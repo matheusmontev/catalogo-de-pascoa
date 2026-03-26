@@ -13,6 +13,7 @@
 <body class="bg-light">
     <!-- Header -->
     <header class="header-theme py-3 text-center mb-4">
+        <img id="logoCardapio" src="" alt="Logo Emilly Doces" class="logo-cardapio d-none mx-auto mb-2">
         <h1 class="h3 fw-bold mb-0">Emilly Doces Artesanais</h1>
     </header>
 
@@ -105,10 +106,12 @@
                         <div class="mb-3">
                             <label for="clienteNome" class="form-label fw-bold">Seu Nome</label>
                             <input type="text" class="form-control" id="clienteNome" placeholder="Ex: Maria Silva" required>
+                            <div class="invalid-feedback d-none" id="erroNomeCliente"></div>
                         </div>
                         <div class="mb-4">
                             <label for="clienteWhatsApp" class="form-label fw-bold">Seu WhatsApp</label>
                             <input type="tel" class="form-control" id="clienteWhatsApp" placeholder="(00) 00000-0000" maxlength="15" required>
+                            <div class="invalid-feedback d-none" id="erroWhatsCliente"></div>
                         </div>
                         <h6 class="fw-bold mb-2">Resumo:</h6>
                         <div id="resumoPedidoModal" class="small mb-3 text-muted"></div>

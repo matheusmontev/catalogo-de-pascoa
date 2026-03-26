@@ -153,7 +153,31 @@ window.confirmarEnvioPedido = async () => {
         return;
     }
     
+    let isValido = true;
     const nome = clienteNome.value.trim();
+    if (nome.length < 6) {
+        clienteNome.classList.add('is-invalid');
+        document.getElementById('erroNomeCliente').textContent = "O nome deve ter no mínimo 6 caracteres.";
+        document.getElementById('erroNomeCliente').classList.remove('d-none');
+        isValido = false;
+    } else {
+        clienteNome.classList.remove('is-invalid');
+        document.getElementById('erroNomeCliente').classList.add('d-none');
+    }
+
+    const whatsappLimpo = clienteWhatsApp.value.replace(/\D/g, "");
+    if (whatsappLimpo.length !== 11) {
+        clienteWhatsApp.classList.add('is-invalid');
+        document.getElementById('erroWhatsCliente').textContent = "O WhatsApp deve conter 11 dígitos.";
+        document.getElementById('erroWhatsCliente').classList.remove('d-none');
+        isValido = false;
+    } else {
+        clienteWhatsApp.classList.remove('is-invalid');
+        document.getElementById('erroWhatsCliente').classList.add('d-none');
+    }
+
+    if (!isValido) return;
+
     const whatsapp = clienteWhatsApp.value.trim();
     const valorTotal = calcularTotal();
 
@@ -180,6 +204,7 @@ window.confirmarEnvioPedido = async () => {
         
         // Salvar pedido Firestore
         await addDoc(collection(db, "pedidos"), pedido);
+        console.log("Pedido salvo no Firestore com sucesso!");
         
         // Oculta modal e exibe Toast de Sucesso
         modalFinalizarInstance.hide();
@@ -226,7 +251,8 @@ async function notificarEmily(pedido) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pedido, whatsapp, apikey })
     });
+    console.log("Notificação processada com sucesso");
   } catch (err) {
-    console.error("Erro ao notificar Emily:", err);
+    console.error("Descrição do erro ao notificar Emily:", err);
   }
 }
