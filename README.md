@@ -1,21 +1,57 @@
-# 🐰 Catálogo de Páscoa - Emilly Doces
+# 🐰 Emilly Doces Artesanais - Catálogo Digital
 
-Este projeto é uma aplicação web completa para gerenciamento de catálogo de produtos e processamento de pedidos, desenvolvida com HTML, CSS, JavaScript e Firebase.
+![Banner](https://img.shields.io/badge/Status-Desenvolvimento-green?style=for-the-badge)
+![Firebase](https://img.shields.io/badge/Firebase-039BE5?style=for-the-badge&logo=Firebase&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
-## 🚀 Funcionalidades
+Uma plataforma completa de cardápio digital e gestão de pedidos desenvolvida especialmente para a **Emilly Doces Artesanais**. O sistema permite que clientes visualizem produtos, montem carrinhos e enviem pedidos diretamente para o WhatsApp da proprietária, com todo o gerenciamento centralizado em um painel administrativo robusto.
 
-- **Catálogo de Produtos**: Exibição de produtos organizados por categorias.
-- **Carrinho de Compras**: Adição, remoção e atualização de quantidades de produtos.
-- **Finalização de Pedidos**: Formulário para coleta de dados do cliente e envio para o Firestore.
-- **Integração Firebase**: Armazenamento de produtos, categorias e pedidos em tempo real.
-- **Notificações**: Simulação de notificação para o administrador via Vercel Serverless Function.
-- **Design Responsivo**: Interface adaptada para dispositivos móveis e desktop.
+---
+
+## ✨ Funcionalidades
+
+### 🛒 Área do Cliente (Vitrine)
+- **Interface Mobile-First**: Design otimizado para navegação intuitiva em smartphones.
+- **Categorização Inteligente**: Navegação rápida entre diferentes tipos de doces e ovos de páscoa.
+- **Carrinho Dinâmico**: Adição de itens com controle de quantidade e cálculo automático de subtotal.
+- **Finalização Simplificada**: Coleta de dados básica (Nome e WhatsApp) para agilizar o atendimento.
+- **Status da Loja**: Aviso em tempo real se a loja está aberta ou fechada para pedidos.
+- **Notificações em Tempo Real**: Alertas visuais (toasts) de sucesso ao enviar pedidos.
+
+### 🔐 Painel Administrativo
+- **Autenticação Segura**: Acesso restrito via Firebase Auth para garantir a segurança dos dados.
+- **Gestão de Produtos**: CRUD completo (Criar, Ler, Atualizar, Deletar) com suporte a imagens e descrições.
+- **Gestão de Categorias**: Organização flexível da ordem de exibição no cardápio.
+- **Controle de Pedidos**: Visualização detalhada de todos os pedidos recebidos, com dados do cliente e lista de itens.
+- **Configurações Globais**:
+    - Chave mestre para abrir/fechar a loja.
+    - Edição de banners de aviso e links de logo.
+    - Configuração de integração com **CallMeBot** para notificações instantâneas no WhatsApp da Emilly.
+
+---
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Frameworks/Bibliotecas**:
-  - Bootstrap 5 (UI/UX)
-  - Firebase (Firestore Database)
-- **Backend/API**:
-  - Vercel Serverless Functions (Node.js) - Para notificação via WhatsApp.
+O projeto utiliza uma stack moderna e serverless para garantir alta disponibilidade e baixo custo:
+
+- **Frontend**: HTML5, CSS3 (Vanilla), Bootstrap 5 para layout responsivo e Bootstrap Icons.
+- **Backend / Database**: 
+    - **Firebase Firestore**: Banco de dados NoSQL em tempo real.
+    - **Firebase Authentication**: Gestão de usuários do painel.
+    - **Cloudinary API**: (Opcional/Planejado) Para otimização e processamento de imagens de produtos.
+- **Integrações**: 
+    - **CallMeBot API**: Notificação automática de novos pedidos no WhatsApp.
+- **Hospedagem**: Vercel.
+
+---
+
+## 🎨 Design System
+
+O projeto utiliza uma paleta de cores voltada para confeitaria:
+- **Rosa Principal**: `#e83e8c` (Destaques e botões)
+- **Fundo**: `#f4f6f9` (Leitura limpa)
+- **Cartões**: Background branco com sombras suaves para efeito de "elevação".
+
+---
+
+<p align="center">Desenvolvido para a Emilly Doces</p>
