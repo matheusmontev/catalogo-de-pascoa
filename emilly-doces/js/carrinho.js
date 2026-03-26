@@ -203,21 +203,26 @@ window.confirmarEnvioPedido = async () => {
     loadingFinalizar.classList.remove("d-none");
     
     try {
-        // Usa timestamp ofcial do Google Firestore
+        // Usa timestamp oficial do Google Firestore
         pedido.criado_em = serverTimestamp();
         
-        // Salvar pedido Firestore
-        await addDoc(collection(db, "pedidos"), pedido);
-        console.log("Pedido salvo no Firestore com sucesso!");
+        // Salvar pedido Firestore (Isolado para não travar a notificação se o banco falhar/bloquear)
+        try {
+            await addDoc(collection(db, "pedidos"), pedido);
+            console.log("Pedido salvo no Firestore com sucesso!");
+        } catch (dbErr) {
+            console.error("Falha ao salvar pedido no Firestore:", dbErr);
+            // Seguimos com a notificação mesmo sem salvar no banco para não perder a venda
+        }
         
         // Oculta modal e exibe Toast de Sucesso
         modalFinalizarInstance.hide();
         toastInstance.show();
         
-        // Ajusta timestamp apenas para debug log do notificarEmily
+        // Ajusta timestamp apenas para o log/envio do notificarEmily
         const pedidoNotificacao = { ...pedido, criado_em: new Date().toISOString() };
         
-        // Disparar Notificação Simulando a Function
+        // Disparar Notificação
         notificarEmily(pedidoNotificacao);
         
         // Limpeza (Reset do Carrinho)
@@ -226,7 +231,7 @@ window.confirmarEnvioPedido = async () => {
         formFinalizar.reset();
         
     } catch (error) {
-        console.error("Erro ao salvar pedido: ", error);
+        console.error("Erro geral ao processar pedido:", error);
         alert("Ocorreu um erro ao enviar o pedido. Tente novamente.");
     } finally {
         btnConfirmarPedido.classList.remove("d-none");
@@ -260,6 +265,13 @@ async function notificarEmily(pedido) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pedido, whatsapp, apikey })
     });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`Erro na API (${res.status}):`, errorText);
+      return;
+    }
+
     const result = await res.json();
     console.log("Resposta da Vercel Function:", result);
   } catch (err) {
