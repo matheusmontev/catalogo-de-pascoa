@@ -237,26 +237,32 @@ window.confirmarEnvioPedido = async () => {
 // ── NOTIFICAÇÃO ──
 // Disparo Real HTTP (Vercel Node.js Serverless Function)
 async function notificarEmily(pedido) {
+  console.log("notificarEmily iniciada", pedido);
   try {
+    console.log("Buscando configurações...");
     const snap = await getDoc(doc(db, "configuracoes", "geral"));
+    console.log("Config existe?", snap.exists());
     if (!snap.exists()) return;
 
     const config = snap.data();
+    console.log("Config carregada:", config);
     const whatsapp = config.whatsapp_emily;
     const apikey = config.callmebot_apikey;
 
     if (!whatsapp || !apikey) {
-      console.warn("WhatsApp ou apikey não configurados.");
+      console.warn("WhatsApp ou apikey não configurados:", { whatsapp, apikey });
       return;
     }
 
-    await fetch('/api/notificar', {
+    console.log("Chamando /api/notificar...");
+    const res = await fetch('/api/notificar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pedido, whatsapp, apikey })
     });
-    console.log("Notificação processada com sucesso");
+    const result = await res.json();
+    console.log("Resposta da Vercel Function:", result);
   } catch (err) {
-    console.error("Descrição do erro ao notificar Emily:", err);
+    console.error("Erro em notificarEmily:", err);
   }
 }
