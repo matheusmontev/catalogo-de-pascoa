@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "emilly-doces/api/**/*.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/emilly-doces/api/$1" },
+    { "src": "/(.*)", "dest": "/emilly-doces/$1" }
+  ]
+}
