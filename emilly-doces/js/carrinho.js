@@ -1,3 +1,6 @@
+import { db } from "./firebase-config.js";
+import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
 let carrinho = [];
 
 // Seleção de elementos
@@ -9,11 +12,43 @@ const totalCarrinho = document.getElementById("totalCarrinho");
 const btnEnviarPedido = document.getElementById("btnEnviarPedido");
 
 let offcanvasInstance = null;
+let modalFinalizarInstance = null;
+let toastInstance = null;
+
+// Elementos Finalizar Pedido
+const formFinalizar = document.getElementById("formFinalizar");
+const clienteNome = document.getElementById("clienteNome");
+const clienteWhatsApp = document.getElementById("clienteWhatsApp");
+const resumoPedidoModal = document.getElementById("resumoPedidoModal");
+const totalFinalizarModal = document.getElementById("totalFinalizarModal");
+const btnConfirmarPedido = document.getElementById("btnConfirmarPedido");
+const loadingFinalizar = document.getElementById("loadingFinalizar");
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Inicializa o OffCanvas nativo do Bootstrap p/ controle manual via JS
+    // Inicialização do Bootstrap
     const offcanvasCarrinhoEl = document.getElementById('offcanvasCarrinho');
-    offcanvasInstance = new bootstrap.Offcanvas(offcanvasCarrinhoEl);
+    if (offcanvasCarrinhoEl) offcanvasInstance = new bootstrap.Offcanvas(offcanvasCarrinhoEl);
+    
+    const modalFinalizarEl = document.getElementById('modalFinalizar');
+    if (modalFinalizarEl) modalFinalizarInstance = new bootstrap.Modal(modalFinalizarEl);
+    
+    const toastSucessoEl = document.getElementById('toastSucesso');
+    if (toastSucessoEl) toastInstance = new bootstrap.Toast(toastSucessoEl);
+
+    // Máscara (00) 00000-0000 simples no WhatsApp
+    if (clienteWhatsApp) {
+        clienteWhatsApp.addEventListener("input", function (e) {
+            let val = e.target.value.replace(/\D/g, "");
+            let formatted = val;
+            if (val.length > 2) {
+                formatted = "(" + val.substring(0, 2) + ") " + val.substring(2);
+            }
+            if (val.length > 7) {
+                formatted = "(" + val.substring(0, 2) + ") " + val.substring(2, 7) + "-" + val.substring(7, 11);
+            }
+            e.target.value = formatted;
+        });
+    }
 });
 
 window.abrirCarrinho = () => {
@@ -22,7 +57,6 @@ window.abrirCarrinho = () => {
 };
 
 window.adicionarAoCarrinho = (produto, qtd) => {
-    // Procura no array se item já existe para somar, se não, faz um push
     const itemExistente = carrinho.find(item => item.id === produto.id);
     
     if (itemExistente) {
@@ -36,14 +70,13 @@ window.adicionarAoCarrinho = (produto, qtd) => {
             quantidade: qtd
         });
     }
-
     atualizarBadgeCart();
 };
 
 window.removerItemCarrinho = (produtoId) => {
     carrinho = carrinho.filter(item => item.id !== produtoId);
     atualizarBadgeCart();
-    renderizarCarrinho(); // Atualiza a renderização já que o offcanvas está aberto
+    renderizarCarrinho();
 };
 
 function atualizarBadgeCart() {
@@ -51,28 +84,28 @@ function atualizarBadgeCart() {
     cartCount.textContent = totalItens;
 }
 
+function calcularTotal() {
+    return carrinho.reduce((acc, item) => acc + (item.quantidade * item.preco), 0);
+}
+
 function renderizarCarrinho() {
     carrinhoItensContainer.innerHTML = "";
     
     if (carrinho.length === 0) {
-        // UI Carrinho Vazio
         carrinhoVazio.classList.remove("d-none");
         totalCarrinhoContainer.classList.add("d-none");
         totalCarrinhoContainer.classList.remove("d-flex");
         btnEnviarPedido.classList.add("d-none");
     } else {
-        // UI Carrinho Ocupado
         carrinhoVazio.classList.add("d-none");
         totalCarrinhoContainer.classList.remove("d-none");
         totalCarrinhoContainer.classList.add("d-flex");
         btnEnviarPedido.classList.remove("d-none");
         
-        let valorTotal = 0;
+        let valorTotal = calcularTotal();
 
         carrinho.forEach(item => {
             const subtotal = item.quantidade * item.preco;
-            valorTotal += subtotal;
-
             const div = document.createElement("div");
             div.className = "d-flex align-items-center border-bottom pb-3 mb-3";
             
@@ -98,10 +131,97 @@ function renderizarCarrinho() {
     }
 }
 
-// Botão final placeholder
+// Abre o Modal para pedir informações de Nome e WhatsApp
 window.enviarPedido = () => {
     if (carrinho.length === 0) return;
-
-    alert("Pronto! Na próxima etapa criaremos a comunicação com a API do CallMeBot para enviar o pedido.");
+    
     offcanvasInstance.hide();
+    
+    // Resumo UI
+    let resumoHtml = carrinho.map(item => `${item.quantidade}x ${item.nome}`).join('<br>');
+    resumoPedidoModal.innerHTML = resumoHtml;
+    const valorTotal = calcularTotal();
+    totalFinalizarModal.textContent = `R$ ${valorTotal.toFixed(2).replace('.', ',')}`;
+    
+    modalFinalizarInstance.show();
 };
+
+// Confirmar Formulário
+window.confirmarEnvioPedido = async () => {
+    if (!formFinalizar.checkValidity()) {
+        formFinalizar.reportValidity();
+        return;
+    }
+    
+    const nome = clienteNome.value.trim();
+    const whatsapp = clienteWhatsApp.value.trim();
+    const valorTotal = calcularTotal();
+
+    const pedido = {
+        cliente_nome: nome,
+        cliente_whatsapp: whatsapp,
+        itens: carrinho.map(item => ({
+            id: item.id,
+            nome: item.nome,
+            preco: item.preco,
+            quantidade: item.quantidade
+        })),
+        total: valorTotal,
+        status: "novo"
+    };
+
+    // UI Feedback Executando
+    btnConfirmarPedido.classList.add("d-none");
+    loadingFinalizar.classList.remove("d-none");
+    
+    try {
+        // Usa timestamp ofcial do Google Firestore
+        pedido.criado_em = serverTimestamp();
+        
+        // Salvar pedido Firestore
+        await addDoc(collection(db, "pedidos"), pedido);
+        
+        // Oculta modal e exibe Toast de Sucesso
+        modalFinalizarInstance.hide();
+        toastInstance.show();
+        
+        // Ajusta timestamp apenas para debug log do notificarEmily
+        const pedidoNotificacao = { ...pedido, criado_em: new Date().toISOString() };
+        
+        // Disparar Notificação Simulando a Function
+        notificarEmily(pedidoNotificacao);
+        
+        // Limpeza (Reset do Carrinho)
+        carrinho = [];
+        atualizarBadgeCart();
+        formFinalizar.reset();
+        
+    } catch (error) {
+        console.error("Erro ao salvar pedido: ", error);
+        alert("Ocorreu um erro ao enviar o pedido. Tente novamente.");
+    } finally {
+        btnConfirmarPedido.classList.remove("d-none");
+        loadingFinalizar.classList.add("d-none");
+    }
+};
+
+// Mock do Disparo HTTP (Vercel Node.js Serverless Function)
+async function notificarEmily(pedido) {
+    console.log("Chamando Vercel Function: /api/notificar");
+    
+    /* Quando estiver no ar a rota, faremos um POST real:
+    try {
+        const response = await fetch('/api/notificar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pedido })
+        });
+        const result = await response.json();
+        console.log("Vercel Respondeu:", result);
+    } catch(err) {
+        console.error("Falha ao comunicar com Vercel Function", err);
+    }
+    */
+    
+    console.log("Novo pedido salvo - Notificando Emily:", JSON.stringify(pedido, null, 2));
+}
