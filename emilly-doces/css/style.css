@@ -12,6 +12,12 @@ body {
     background-color: #fafbfc !important;
 }
 
+@keyframes pulseLogo {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
 .header-theme {
     background: linear-gradient(135deg, var(--nude) 0%, var(--pink-light) 100%);
     color: var(--pink-dark);

@@ -35,9 +35,12 @@ async function carregarMenu() {
             }
             if (config.logo_url && config.logo_url.trim() !== "") {
                 const logoEl = document.getElementById("logoCardapio");
+                const splashEl = document.getElementById("splashLogo");
                 if (logoEl) {
                     logoEl.src = config.logo_url;
-                    logoEl.classList.remove("d-none");
+                }
+                if (splashEl) {
+                    splashEl.src = config.logo_url;
                 }
                 let link = document.querySelector("link[rel~='icon']");
                 if (!link) {
@@ -74,9 +77,19 @@ async function carregarMenu() {
         // 4. Renderizar interface
         renderizarCardapio();
 
-        // Limpar tela de carregamento
+        // Limpar tela de carregamento (Spinner interno ignorado pela SplashScreen por cima)
         loader.classList.add("d-none");
         menuContainer.style.display = "block";
+        
+        // Timer da Splash para imersão agradável
+        setTimeout(() => {
+            const splash = document.getElementById("splashScreen");
+            if(splash) {
+                splash.style.opacity = "0";
+                splash.style.visibility = "hidden";
+                setTimeout(() => splash.remove(), 600);
+            }
+        }, 1200);
     } catch (error) {
         console.error("Erro ao carregar cardápio:", error);
         loader.innerHTML = "<p class='text-danger fw-bold'>Erro de conexão com o painel.</p>";
