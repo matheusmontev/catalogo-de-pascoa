@@ -205,23 +205,28 @@ window.confirmarEnvioPedido = async () => {
     }
 };
 
-// Mock do Disparo HTTP (Vercel Node.js Serverless Function)
+// Disparo Real HTTP (Vercel Node.js Serverless Function)
 async function notificarEmily(pedido) {
-    console.log("Chamando Vercel Function: /api/notificar");
-    
-    /* Quando estiver no ar a rota, faremos um POST real:
-    try {
-        const response = await fetch('/api/notificar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pedido })
-        });
-        const result = await response.json();
-        console.log("Vercel Respondeu:", result);
-    } catch(err) {
-        console.error("Falha ao comunicar com Vercel Function", err);
+  try {
+    const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
+    const snap = await getDoc(doc(db, "configuracoes", "geral"));
+    if (!snap.exists()) return;
+
+    const config = snap.data();
+    const whatsapp = config.whatsapp_emily;
+    const apikey = config.callmebot_apikey;
+
+    if (!whatsapp || !apikey) {
+      console.warn("WhatsApp ou apikey não configurados.");
+      return;
     }
-    */
-    
-    console.log("Novo pedido salvo - Notificando Emily:", JSON.stringify(pedido, null, 2));
+
+    await fetch('/api/notificar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pedido, whatsapp, apikey })
+    });
+  } catch (err) {
+    console.error("Erro ao notificar Emily:", err);
+  }
 }
