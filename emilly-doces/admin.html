@@ -111,6 +111,14 @@
                 <div class="tab-pane fade" id="content-config">
                     <div class="card border-0 shadow-sm p-4 col-md-8 col-lg-6 mx-auto">
                         <h5 class="fw-bold mb-4">Configurações do Sistema</h5>
+                        
+                        <div class="mb-4 d-flex align-items-center justify-content-between p-3 border rounded" style="background-color: #fbfbfb;">
+                            <span class="fw-bold fs-5" id="labelLojaAberta">🟢 Loja Aberta</span>
+                            <div class="form-check form-switch fs-4 mb-0">
+                                <input class="form-check-input" type="checkbox" role="switch" id="configLojaAberta" checked>
+                            </div>
+                        </div>
+
                         <form id="formConfig" onsubmit="salvarConfiguracoes(event)">
                             <div class="mb-3">
                                 <label class="fw-bold small">Aviso Geral (cardápio)</label>
@@ -222,6 +230,18 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4" id="conteudoDetalhePedido"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Admin -->
+    <div class="toast-container position-fixed top-0 mt-3 end-0 p-3" style="z-index: 1055">
+        <div id="toastAdmin" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-bold text-white" id="toastAdminMsg">
+                    Mensagem
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
     </div>

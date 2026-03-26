@@ -1,6 +1,6 @@
 import { db, auth } from "./firebase-config.js";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { collection, query, getDocs, doc, addDoc, updateDoc, deleteDoc, getDoc, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { collection, query, getDocs, doc, addDoc, updateDoc, deleteDoc, getDoc, orderBy, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 // Cloudinary Vars
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dwxzgwt2h/image/upload";
@@ -9,13 +9,17 @@ const UPLOAD_PRESET = "emilly_doces_preset";
 // Globais
 let categoriasData = [];
 let pedidosCacheLoc = [];
+let unsubscribePedidos = null;
 
-let mProduto, mCategoria, mPedido;
+let mProduto, mCategoria, mPedido, mToastAdmin;
 
 document.addEventListener("DOMContentLoaded", () => {
     mProduto = new bootstrap.Modal(document.getElementById("modalProduto"));
     mCategoria = new bootstrap.Modal(document.getElementById("modalCategoria"));
     mPedido = new bootstrap.Modal(document.getElementById("modalVerPedido"));
+    
+    const toastEl = document.getElementById("toastAdmin");
+    if(toastEl) mToastAdmin = new bootstrap.Toast(toastEl);
 
     // Auth state hook
     onAuthStateChanged(auth, (user) => {
@@ -32,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("produtoArquivo").addEventListener("change", fazerUploadCloudinary);
 });
 
-// AUTENTICACAO
+// ── AUTENTICAÇÃO ──
 document.getElementById("formLogin").addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = document.getElementById("btnLogin");
@@ -55,6 +59,10 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
 });
 
 window.fazerLogout = async () => {
+    if (unsubscribePedidos) {
+        unsubscribePedidos();
+        unsubscribePedidos = null;
+    }
     try { await signOut(auth); } catch(e) { console.error("Erro ao fazer logout:", e); }
 };
 
@@ -267,18 +275,32 @@ async function fazerUploadCloudinary(e) {
     }
 }
 
-// ----------------------
-// PEDIDOS
-// ----------------------
-async function carregarPedidos() {
+// ── PEDIDOS ──
+function carregarPedidos() {
     const lista = document.getElementById("listaPedidos");
-    try {
-        const q = query(collection(db, "pedidos"), orderBy("criado_em", "desc"));
-        const snap = await getDocs(q);
+    const q = query(collection(db, "pedidos"), orderBy("criado_em", "desc"));
+    
+    if (unsubscribePedidos) unsubscribePedidos();
+    
+    let isInitialLoad = true;
+    
+    unsubscribePedidos = onSnapshot(q, (snapshot) => {
         pedidosCacheLoc = [];
         lista.innerHTML = "";
         
-        snap.forEach(d => {
+        snapshot.docChanges().forEach((change) => {
+            if (change.type === "added" && !isInitialLoad) {
+                const toastMsg = document.getElementById("toastAdminMsg");
+                const toastDiv = document.getElementById("toastAdmin");
+                if (toastMsg && toastDiv) {
+                    toastMsg.textContent = "🍬 Novo pedido recebido!";
+                    toastDiv.className = "toast align-items-center bg-info text-dark border-0";
+                    if(mToastAdmin) mToastAdmin.show();
+                }
+            }
+        });
+        
+        snapshot.forEach(d => {
             const data = d.data();
             pedidosCacheLoc.push({ id: d.id, ...data });
             
@@ -308,7 +330,10 @@ async function carregarPedidos() {
                 </tr>
             `;
         });
-    } catch(err) { console.error("Erro ao carregar pedidos:", err); }
+        isInitialLoad = false;
+    }, (error) => {
+        console.error("Erro no listener de pedidos:", error);
+    });
 }
 
 window.verPedido = (id) => {
@@ -340,6 +365,36 @@ async function carregarConfiguracoes() {
         const snap = await getDoc(doc(db, "configuracoes", "geral"));
         if(snap.exists()) {
             const data = snap.data();
+            
+            // Toggle Loja
+            const isOpen = data.loja_aberta !== false;
+            const btnLoja = document.getElementById("configLojaAberta");
+            const lblLoja = document.getElementById("labelLojaAberta");
+            btnLoja.checked = isOpen;
+            lblLoja.textContent = isOpen ? "🟢 Loja Aberta" : "🔴 Loja Fechada";
+            
+            btnLoja.onchange = async (e) => {
+                const isNowOpen = e.target.checked;
+                lblLoja.textContent = isNowOpen ? "🟢 Loja Aberta" : "🔴 Loja Fechada";
+                try {
+                    await updateDoc(doc(db, "configuracoes", "geral"), { loja_aberta: isNowOpen });
+                    const toastMsg = document.getElementById("toastAdminMsg");
+                    const toastDiv = document.getElementById("toastAdmin");
+                    if(isNowOpen) {
+                        toastMsg.textContent = "Loja aberta!";
+                        toastDiv.className = "toast align-items-center bg-success border-0";
+                    } else {
+                        toastMsg.textContent = "Loja fechada!";
+                        toastDiv.className = "toast align-items-center bg-danger border-0";
+                    }
+                    if(mToastAdmin) mToastAdmin.show();
+                } catch(err) {
+                    console.error("Erro ao alterar loja:", err);
+                    e.target.checked = !isNowOpen;
+                    lblLoja.textContent = !isNowOpen ? "🟢 Loja Aberta" : "🔴 Loja Fechada";
+                }
+            };
+
             document.getElementById("configAviso").value = data.aviso_texto || "";
             document.getElementById("configLogo").value = data.logo_url || "";
             document.getElementById("configWhats").value = data.whatsapp_emily || "";
@@ -358,7 +413,7 @@ window.salvarConfiguracoes = async (e) => {
             logo_url: document.getElementById("configLogo").value,
             whatsapp_emily: document.getElementById("configWhats").value,
             callmebot_apikey: document.getElementById("configApikey").value
-        });
+        }, { merge: true });
         console.log("Configurações salvas com sucesso");
         alert("Salvo!");
     } catch(err) { console.error("Erro ao salvar configuracoes:", err); }

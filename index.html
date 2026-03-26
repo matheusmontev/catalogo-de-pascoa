@@ -13,13 +13,22 @@
 <body class="bg-light">
     <!-- Header -->
     <header class="header-theme py-3 text-center mb-4">
-        <img id="logoCardapio" src="emilly-doces/img/WhatsApp Image 2026-03-26 at 00.46.39.jpeg" alt="Logo Emilly Doces" class="logo-cardapio d-none mx-auto mb-2">
+        <img id="logoCardapio" src="emilly-doces/img/WhatsApp Image 2026-03-26 at 00.46.39.jpeg" alt="Logo Emilly Doces" class="logo-cardapio mx-auto mb-2">
         <h1 class="h3 fw-bold mb-0">Emilly Doces Artesanais</h1>
     </header>
 
     <!-- Banner Aviso -->
     <div class="container d-none" id="avisoHeader">
         <div class="alert alert-warning text-center" role="alert" id="textoAviso"></div>
+    </div>
+
+    <!-- Banner Loja Fechada -->
+    <div class="container text-center py-4 d-none" id="lojaFechadaMsg">
+        <div class="p-5 rounded-4 shadow-sm" style="background-color: var(--pink-light); border: 2px solid var(--pink-main);">
+            <i class="bi bi-door-closed text-pink mb-2" style="font-size: 3rem;"></i>
+            <h2 class="fw-bold text-pink mt-3">🔴 Estamos fechados no momento.</h2>
+            <p class="fs-5 text-muted mt-2">Em breve voltamos com novidades! 🍬</p>
+        </div>
     </div>
 
     <!-- Spinner Loading -->
@@ -41,7 +50,7 @@
     </div>
 
     <!-- Botão Fixo Carrinho -->
-    <div class="fab-cart" onclick="abrirCarrinho()">
+    <div class="fab-cart" onclick="abrirCarrinho()" id="fabCart">
         <i class="bi bi-cart3"></i>
         <span class="badge bg-danger rounded-pill cart-badge" id="cartCount">0</span>
     </div>

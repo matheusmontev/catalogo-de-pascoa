@@ -1,6 +1,7 @@
 import { db } from "./firebase-config.js";
-import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { collection, addDoc, serverTimestamp, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+// ── VARIÁVEIS DE ESTADO ──
 let carrinho = [];
 
 // Seleção de elementos
@@ -24,6 +25,7 @@ const totalFinalizarModal = document.getElementById("totalFinalizarModal");
 const btnConfirmarPedido = document.getElementById("btnConfirmarPedido");
 const loadingFinalizar = document.getElementById("loadingFinalizar");
 
+// ── INICIALIZAÇÃO ──
 document.addEventListener("DOMContentLoaded", () => {
     // Inicialização do Bootstrap
     const offcanvasCarrinhoEl = document.getElementById('offcanvasCarrinho');
@@ -51,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// ── CARRINHO ──
 window.abrirCarrinho = () => {
     renderizarCarrinho();
     offcanvasInstance.show();
@@ -114,7 +117,7 @@ function renderizarCarrinho() {
             const imgUrl = item.foto_url || "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&q=80&w=50&h=50";
 
             div.innerHTML = `
-                <img src="${imgUrl}" alt="${item.nome}" class="cart-item-img me-3 shadow-sm">
+                <img src="${imgUrl}" alt="${item.nome}" class="cart-item-img me-3 shadow-sm" loading="lazy">
                 <div class="flex-grow-1">
                     <h6 class="mb-1 fw-bold text-dark">${item.nome}</h6>
                     <small class="text-muted d-block">${item.quantidade}x ${precoFormat}</small>
@@ -131,6 +134,7 @@ function renderizarCarrinho() {
     }
 }
 
+// ── PEDIDO ──
 // Abre o Modal para pedir informações de Nome e WhatsApp
 window.enviarPedido = () => {
     if (carrinho.length === 0) return;
@@ -230,10 +234,10 @@ window.confirmarEnvioPedido = async () => {
     }
 };
 
+// ── NOTIFICAÇÃO ──
 // Disparo Real HTTP (Vercel Node.js Serverless Function)
 async function notificarEmily(pedido) {
   try {
-    const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
     const snap = await getDoc(doc(db, "configuracoes", "geral"));
     if (!snap.exists()) return;
 

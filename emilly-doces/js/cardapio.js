@@ -1,7 +1,7 @@
 import { db } from "./firebase-config.js";
 import { collection, query, where, orderBy, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// Variáveis para cache na memória
+// ── GLOBAIS E INTERFACE ──
 let produtosCache = [];
 let categoriasCache = [];
 let produtoAtualModal = null; 
@@ -16,6 +16,7 @@ const produtosGrid = document.getElementById("produtosGrid");
 
 const modalAdicionar = new bootstrap.Modal(document.getElementById('modalAdicionar'));
 
+// ── CARREGAMENTO PRINCIPAL ──
 document.addEventListener("DOMContentLoaded", async () => {
     await carregarMenu();
 });
@@ -45,6 +46,14 @@ async function carregarMenu() {
                     document.head.appendChild(link);
                 }
                 link.href = config.logo_url;
+            }
+
+            if (config.loja_aberta === false) {
+                document.getElementById("lojaFechadaMsg").classList.remove("d-none");
+                loader.classList.add("d-none");
+                menuContainer.style.display = "none";
+                document.getElementById("fabCart").classList.add("d-none");
+                return;
             }
         }
 
@@ -129,7 +138,7 @@ function renderizarCardapio() {
 
             col.innerHTML = `
                 <div class="product-card h-100">
-                    <img src="${fotoUrl}" alt="${prod.nome}" class="product-img">
+                    <img src="${fotoUrl}" alt="${prod.nome}" class="product-img" loading="lazy">
                     <div class="product-info d-flex flex-column h-100">
                         <div class="product-title">${prod.nome}</div>
                         <div class="product-desc flex-grow-1">${prod.descricao || ''}</div>
@@ -148,9 +157,7 @@ function renderizarCardapio() {
     });
 }
 
-// ======================
-// Lógica de Modal (Para interagir via click HTML)
-// ======================
+// ── LÓGICA DE MODAL (CARRINHO E QTDS) ──
 window.prepararAdicao = (produtoId) => {
     const produto = produtosCache.find(p => p.id === produtoId);
     if (!produto) return;
