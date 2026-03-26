@@ -34,11 +34,7 @@ async function carregarMenu() {
                 avisoHeader.classList.remove("d-none");
             }
             if (config.logo_url && config.logo_url.trim() !== "") {
-                const logoEl = document.getElementById("logoCardapio");
                 const splashEl = document.getElementById("splashLogo");
-                if (logoEl) {
-                    logoEl.src = config.logo_url;
-                }
                 if (splashEl) {
                     splashEl.src = config.logo_url;
                 }
