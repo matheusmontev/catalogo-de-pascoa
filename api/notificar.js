@@ -16,13 +16,25 @@ export default async function handler(req, res) {
 
   const total = `R$ ${pedido.total.toFixed(2).replace('.', ',')}`;
 
-  const mensagem = 
-    `🍬 *Novo Pedido - Emilly Doces*%0A%0A` +
-    `👤 *Cliente:* ${pedido.cliente_nome}%0A` +
-    `📱 *WhatsApp:* ${pedido.cliente_whatsapp}%0A%0A` +
-    `🛒 *Itens:*%0A${itens}%0A%0A` +
-    `💰 *Total: ${total}*%0A%0A` +
-    `📦 Retirada combinada pelo WhatsApp`;
+const mensagem = encodeURIComponent(
+  `🍬 *NOVO PEDIDO — Emilly Doces Artesanais*\n` +
+  `━━━━━━━━━━━━━━━━━━━━\n\n` +
+  `👤 *Cliente:* ${pedido.cliente_nome}\n` +
+  `📱 *WhatsApp:* ${pedido.cliente_whatsapp}\n\n` +
+  `🛒 *Itens:*\n${listaItens}\n\n` +
+  `💰 *Total: ${totalFmt}*\n` +
+  `━━━━━━━━━━━━━━━━━━━━\n\n` +
+  `📋 *MENSAGEM PARA ENVIAR AO CLIENTE:*\n\n` +
+  `Olá, ${pedido.cliente_nome}! 😊\n` +
+  `Recebi seu pedido pela Emilly Doces Artesanais.\n\n` +
+  `🛒 *Seu pedido:*\n${listaItens}\n\n` +
+  `💰 *Total: ${totalFmt}*\n\n` +
+  `📌 *Informações importantes:*\n` +
+  `• Atendemos apenas aos finais de semana\n` +
+  `• Retirada a combinar pelo WhatsApp\n` +
+  `• Pagamento somente na retirada do produto\n\n` +
+  `Em breve entrarei em contato para confirmar os detalhes. 🍬`
+);
 
   const url = `https://api.callmebot.com/whatsapp.php?phone=${whatsapp}&text=${mensagem}&apikey=${apikey}`;
 
