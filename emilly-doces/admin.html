@@ -234,6 +234,26 @@
         </div>
     </div>
 
+    <!-- MODAL EXCLUIR PEDIDO -->
+    <div class="modal fade" id="modalExcluirPedido" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom mx-2">
+                    <h5 class="modal-title fw-bold">Excluir pedido?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p id="msgConfirmExclusaoPedido"></p>
+                    <input type="hidden" id="pedidoIdExclusao">
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmarExclusaoPedido()">Sim, excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Admin -->
     <div class="toast-container position-fixed top-0 mt-3 end-0 p-3" style="z-index: 1055">
         <div id="toastAdmin" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">

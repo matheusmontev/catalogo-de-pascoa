@@ -10,31 +10,31 @@ export default async function handler(req, res) {
   }
 
   // Montar mensagem
-  const itens = pedido.itens.map(i =>
+  const listaItens = pedido.itens.map(i =>
     `- ${i.quantidade}x ${i.nome} — R$ ${(i.preco * i.quantidade).toFixed(2).replace('.', ',')}`
-  ).join('%0A');
+  ).join('\n');
 
-  const total = `R$ ${pedido.total.toFixed(2).replace('.', ',')}`;
+  const totalFmt = `R$ ${pedido.total.toFixed(2).replace('.', ',')}`;
 
-const mensagem = encodeURIComponent(
-  `🍬 *NOVO PEDIDO — Emilly Doces Artesanais*\n` +
-  `━━━━━━━━━━━━━━━━━━━━\n\n` +
-  `👤 *Cliente:* ${pedido.cliente_nome}\n` +
-  `📱 *WhatsApp:* ${pedido.cliente_whatsapp}\n\n` +
-  `🛒 *Itens:*\n${listaItens}\n\n` +
-  `💰 *Total: ${totalFmt}*\n` +
-  `━━━━━━━━━━━━━━━━━━━━\n\n` +
-  `📋 *MENSAGEM PARA ENVIAR AO CLIENTE:*\n\n` +
-  `Olá, ${pedido.cliente_nome}! 😊\n` +
-  `Recebi seu pedido pela Emilly Doces Artesanais.\n\n` +
-  `🛒 *Seu pedido:*\n${listaItens}\n\n` +
-  `💰 *Total: ${totalFmt}*\n\n` +
-  `📌 *Informações importantes:*\n` +
-  `• Atendemos apenas aos finais de semana\n` +
-  `• Retirada a combinar pelo WhatsApp\n` +
-  `• Pagamento somente na retirada do produto\n\n` +
-  `Em breve entrarei em contato para confirmar os detalhes. 🍬`
-);
+  const mensagem = encodeURIComponent(
+    `🍬 *NOVO PEDIDO — Emilly Doces Artesanais*\n` +
+    `━━━━━━━━━━━━━━━━━━━━\n\n` +
+    `👤 *Cliente:* ${pedido.cliente_nome}\n` +
+    `📱 *WhatsApp:* ${pedido.cliente_whatsapp}\n\n` +
+    `🛒 *Itens:*\n${listaItens}\n\n` +
+    `💰 *Total: ${totalFmt}*\n` +
+    `━━━━━━━━━━━━━━━━━━━━\n\n` +
+    `📋 *MENSAGEM PARA ENVIAR AO CLIENTE:*\n\n` +
+    `Olá, ${pedido.cliente_nome}! 😊\n` +
+    `Recebi seu pedido pela Emilly Doces Artesanais.\n\n` +
+    `🛒 *Seu pedido:*\n${listaItens}\n\n` +
+    `💰 *Total: ${totalFmt}*\n\n` +
+    `📌 *Informações importantes:*\n` +
+    `• Atendemos apenas aos finais de semana\n` +
+    `• Retirada a combinar pelo WhatsApp\n` +
+    `• Pagamento somente na retirada do produto\n\n` +
+    `Em breve entrarei em contato para confirmar os detalhes. 🍬`
+  );
 
   const url = `https://api.callmebot.com/whatsapp.php?phone=${whatsapp}&text=${mensagem}&apikey=${apikey}`;
 

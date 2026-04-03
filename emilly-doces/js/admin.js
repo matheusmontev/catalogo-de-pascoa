@@ -11,12 +11,13 @@ let categoriasData = [];
 let pedidosCacheLoc = [];
 let unsubscribePedidos = null;
 
-let mProduto, mCategoria, mPedido, mToastAdmin;
+let mProduto, mCategoria, mPedido, mPedidoExcluir, mToastAdmin;
 
 document.addEventListener("DOMContentLoaded", () => {
     mProduto = new bootstrap.Modal(document.getElementById("modalProduto"));
     mCategoria = new bootstrap.Modal(document.getElementById("modalCategoria"));
     mPedido = new bootstrap.Modal(document.getElementById("modalVerPedido"));
+    mPedidoExcluir = new bootstrap.Modal(document.getElementById("modalExcluirPedido"));
     
     const toastEl = document.getElementById("toastAdmin");
     if(toastEl) mToastAdmin = new bootstrap.Toast(toastEl);
@@ -315,6 +316,9 @@ function carregarPedidos() {
             const btnAc = data.status === 'concluido' 
                 ? '<button disabled class="btn btn-sm btn-secondary">Fin.</button>'
                 : `<button class="btn btn-sm btn-success" onclick="marcarConcluido('${d.id}')">Concluir</button>`;
+            const btnExcluir = data.status === 'concluido'
+                ? `<button class="btn btn-sm btn-outline-danger ms-1" onclick="excluirPedido('${d.id}')" title="Excluir"><i class="bi bi-trash"></i> Excluir</button>`
+                : '';
                 
             lista.innerHTML += `
                 <tr>
@@ -326,6 +330,7 @@ function carregarPedidos() {
                     <td class="text-end">
                         <button class="btn btn-sm btn-outline-info" onclick="verPedido('${d.id}')">Ver</button>
                         ${btnAc}
+                        ${btnExcluir}
                     </td>
                 </tr>
             `;
@@ -354,6 +359,40 @@ window.marcarConcluido = async (id) => {
     if(confirm("Marcar finalizado?")) {
         await updateDoc(doc(db, "pedidos", id), { status: "concluido" });
         carregarPedidos();
+    }
+};
+
+window.excluirPedido = (id) => {
+    const p = pedidosCacheLoc.find(x => x.id === id);
+    if (!p) return;
+    
+    document.getElementById("pedidoIdExclusao").value = id;
+    document.getElementById("msgConfirmExclusaoPedido").innerHTML = `Esta ação não pode ser desfeita. O pedido de <b>${p.cliente_nome}</b> será removido permanentemente.`;
+    
+    mPedidoExcluir.show();
+};
+
+window.confirmarExclusaoPedido = async () => {
+    const id = document.getElementById("pedidoIdExclusao").value;
+    if (!id) return;
+
+    try {
+        await deleteDoc(doc(db, "pedidos", id));
+        
+        mPedidoExcluir.hide();
+        console.log("Pedido excluído:", id);
+        
+        const toastMsg = document.getElementById("toastAdminMsg");
+        const toastDiv = document.getElementById("toastAdmin");
+        if (toastMsg && toastDiv) {
+            toastMsg.textContent = "Pedido excluído com sucesso.";
+            toastDiv.className = "toast align-items-center bg-success text-white border-0";
+            if (mToastAdmin) mToastAdmin.show();
+        }
+        
+    } catch (error) {
+        console.error("Erro ao excluir pedido:", error);
+        alert("Erro ao excluir o pedido. Verifique o console.");
     }
 };
 
